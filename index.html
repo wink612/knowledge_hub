@@ -96,7 +96,7 @@ const firebaseConfig = {
   appId: "APP_ID"
 };
 
-const OWNER_EMAIL = "你的邮箱"; // 删除权限判断
+const OWNER_EMAIL = "你的邮箱"; // 用于删除权限
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -110,7 +110,7 @@ const cancelAdd = document.getElementById('cancel-add');
 const knowledgeForm = document.getElementById('knowledge-form');
 const toast = document.getElementById('toast');
 
-let currentUserEmail = OWNER_EMAIL; // 可改成 Firebase Auth 验证 owner
+let currentUserEmail = OWNER_EMAIL; // 直接使用 email 判断删除权限
 
 function showToast(msg){ toast.textContent=msg; toast.classList.remove('opacity-0'); setTimeout(()=>toast.classList.add('opacity-0'),3000); }
 
@@ -143,6 +143,7 @@ function renderCards(data){
 
 onSnapshot(knowledgeCol, snapshot=>renderCards(snapshot.docs));
 
+// 打开/关闭模态框
 addBtn.addEventListener('click',()=>{
   addModal.classList.remove('opacity-0','pointer-events-none');
   addModal.querySelector('div').classList.remove('scale-95');
@@ -178,8 +179,6 @@ knowledgeForm.addEventListener('submit',async e=>{
   knowledgeForm.reset();
   showToast("添加成功");
 });
-
-// 搜索与分类功能可沿用之前逻辑
 </script>
 </body>
 </html>
