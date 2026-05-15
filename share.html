@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Hub - 我的知识分享</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4',
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+            .gradient-bg {
+                background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            .dark .glass {
+                background: rgba(15, 23, 42, 0.7);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-dark dark:text-gray-100 transition-colors duration-300 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-lightbulb-o text-primary text-2xl"></i>
+                <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Knowledge Hub</span>
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-moon-o dark:hidden"></i>
+                    <i class="fa fa-sun-o hidden dark:inline"></i>
+                </button>
+                
+                <button id="share-site" class="hidden md:flex items-center space-x-1 px-3 py-1.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-share-alt"></i>
+                    <span>分享网站</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- 头部区域 -->
+        <header class="text-center mb-12">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4 text-shadow">
+                我的<span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">知识分享</span>
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
+                记录学习过程中的点滴收获，分享有价值的知识和见解，与大家共同成长
+            </p>
+        </header>
+
+        <!-- 搜索和筛选区域 -->
+        <div class="mb-10 max-w-3xl mx-auto">
+            <div class="relative mb-6">
+                <input 
+                    type="text" 
+                    id="search-input"
+                    placeholder="搜索知识..." 
+                    class="w-full px-5 py-3 pl-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                >
+                <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-2" id="category-filters">
+                <button class="category-btn active px-4 py-2 rounded-full bg-primary text-white" data-category="all">全部</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-category="programming">编程</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-category="math">数学</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-category="ai">人工智能</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-category="tools">工具技巧</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-category="other">其他</button>
+            </div>
+        </div>
+
+        <!-- 知识卡片网格 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="knowledge-grid">
+            <!-- 知识卡片会通过JavaScript动态生成 -->
+        </div>
+        
+        <!-- 空状态 -->
+        <div id="empty-state" class="hidden text-center py-16">
+            <i class="fa fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <h3 class="text-xl font-medium mb-2">没有找到相关知识</h3>
+            <p class="text-gray-500 dark:text-gray-400">尝试使用不同的关键词或分类</p>
+        </div>
+    </main>
+
+    <!-- 添加知识模态框 -->
+    <div id="add-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">添加新知识</h2>
+                <button id="close-modal" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="knowledge-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1" for="title">标题</label>
+                    <input type="text" id="title" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1" for="category">分类</label>
+                    <select id="category" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        <option value="programming">编程</option>
+                        <option value="math">数学</option>
+                        <option value="ai">人工智能</option>
+                        <option value="tools">工具技巧</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1" for="content">内容</label>
+                    <textarea id="content" required rows="6" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1" for="tags">标签 (用逗号分隔)</label>
+                    <input type="text" id="tags" placeholder="例如: JavaScript, 前端, 教程" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">取消</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 知识详情模态框 -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="detail-title" class="text-xl font-bold"></h2>
+                <button id="close-detail" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <span id="detail-category" class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-2"></span>
+                <div id="detail-tags" class="flex flex-wrap gap-2 mb-4"></div>
+                <p id="detail-date" class="text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
+                <div id="detail-content" class="prose dark:prose-invert max-w-none"></div>
+            </div>
+            
+            <div class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button id="delete-knowledge" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    <i class="fa fa-trash"></i>
+                    <span>删除</span>
+                </button>
+                
+                <button id="share-knowledge" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-share-alt"></i>
+                    <span>分享</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享链接模态框 -->
+    <div id="share-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">分享链接</h2>
+                <button id="close-share" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <p class="text-gray-600 dark:text-gray-300 mb-4">复制以下链接分享给他人：</p>
+            
+            <div class="relative mb-6">
+                <input 
+                    type="text" 
+                    id="share-link" 
+                    readonly 
+                    class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none"
+                >
+                <button id="copy-link" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-copy"></i>
+                </button>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button class="p-3 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                    <i class="fa fa-weibo"></i>
+                </button>
+                <button class="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors">
+                    <i class="fa fa-wechat"></i>
+                </button>
+                <button class="p-3 rounded-full bg-blue-700 text-white hover:bg-blue-800 transition-colors">
+                    <i class="fa fa-qq"></i>
+                </button>
+                <button class="p-3 rounded-full bg-gray-800 text-white hover:bg-gray-900 transition-colors">
+                    <i class="fa fa-link"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮动添加按钮 -->
+    <button id="add-btn" class="fixed bottom-8 right-8 w-14 h-14 rounded-full gradient-bg text-white shadow-lg flex items-center justify-center hover:shadow-xl transition-all hover:scale-110 z-40">
+        <i class="fa fa-plus text-xl"></i>
+    </button>
+
+    <!-- 提示消息 -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg bg-gray-800 text-white shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-500 dark:text-gray-400">
+            <p>&copy; 2026 Knowledge Hub. 用知识连接世界。</p>
+        </div>
+    </footer>
+
+    <script>
+        // 知识数据
+        let knowledgeData = [
+            {
+                id: 1,
+                title: "JavaScript 闭包详解",
+                category: "programming",
+                content: "闭包是JavaScript中一个非常重要的概念。简单来说，闭包是指有权访问另一个函数作用域中变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数。闭包的主要作用有：1. 实现私有变量 2. 延长变量的生命周期 3. 实现柯里化函数。使用闭包时需要注意内存泄漏问题，因为闭包会保留对外部函数作用域的引用，导致垃圾回收机制无法回收这些变量。",
+                tags: ["JavaScript", "前端", "函数"],
+                date: "2026-05-10"
+            },
+            {
+                id: 2,
+                title: "线性代数中的矩阵乘法",
+                category: "math",
+                content: "矩阵乘法是线性代数中最基本的运算之一。两个矩阵A和B相乘得到矩阵C，要求A的列数等于B的行数。矩阵乘法不满足交换律，即AB≠BA，但满足结合律和分配律。矩阵乘法在计算机图形学、机器学习、物理学等领域有广泛应用。例如，在计算机图形学中，矩阵乘法用于实现旋转、缩放和平移等变换。",
+                tags: ["线性代数", "数学", "矩阵"],
+                date: "2026-05-08"
+            },
+            {
+                id: 3,
+                title: "深度学习中的反向传播算法",
+                category: "ai",
+                content: "反向传播算法是训练神经网络的核心算法。它通过计算损失函数相对于每个权重的梯度，然后使用梯度下降法来更新权重。反向传播的过程可以分为两步：1. 前向传播：计算网络的输出和损失 2. 反向传播：从输出层开始，逐层计算梯度并更新权重。反向传播算法的关键是链式法则，它允许我们高效地计算复合函数的导数。",
+                tags: ["深度学习", "神经网络", "机器学习"],
+                date: "2026-05-05"
+            },
+            {
+                id: 4,
+                title: "VS Code 高效开发技巧",
+                category: "tools",
+                content: "VS Code是目前最流行的代码编辑器之一，掌握一些高效技巧可以大大提高开发效率。1. 使用快捷键：Ctrl+P快速打开文件，Ctrl+Shift+P打开命令面板 2. 安装实用插件：如ESLint、Prettier、GitLens等 3. 使用代码片段：自定义常用代码片段 4. 多光标编辑：按住Alt键点击可以添加多个光标 5. 集成终端：直接在编辑器中使用终端",
+                tags: ["VS Code", "开发工具", "效率"],
+                date: "2026-05-01"
+            },
+            {
+                id: 5,
+                title: "Markdown 语法指南",
+                category: "tools",
+                content: "Markdown是一种轻量级标记语言，用于编写格式化的文档。常用语法包括：1. 标题：使用#号表示 2. 粗体和斜体：**粗体**和*斜体* 3. 列表：有序列表和无序列表 4. 链接：[文本](链接地址) 5. 图片：![alt文本](图片地址) 6. 代码：行内代码`code`和代码块 7. 表格：使用|和-创建表格。Markdown语法简单易学，广泛用于编写README、博客和技术文档。",
+                tags: ["Markdown", "文档", "写作"],
+                date: "2026-04-28"
+            },
+            {
+                id: 6,
+                title: "Python 列表推导式",
+                category: "programming",
+                content: "列表推导式是Python中一种简洁的创建列表的方式。它的基本语法是：[expression for item in iterable if condition]。例如，创建一个包含1到10平方数的列表：[x**2 for x in range(1, 11)]。列表推导式比传统的for循环更简洁、更高效。除了列表推导式，Python还支持字典推导式和集合推导式。",
+                tags: ["Python", "编程", "语法"],
+                date: "2026-04-25"
+            }
+        ];
+
+        // DOM元素
+        const knowledgeGrid = document.getElementById('knowledge-grid');
+        const emptyState = document.getElementById('empty-state');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilters = document.getElementById('category-filters');
+        const addBtn = document.getElementById('add-btn');
+        const addModal = document.getElementById('add-modal');
+        const closeModal = document.getElementById('close-modal');
+        const cancelAdd = document.getElementById('cancel-add');
+        const knowledgeForm = document.getElementById('knowledge-form');
+        const detailModal = document.getElementById('detail-modal');
+        const closeDetail = document.getElementById('close-detail');
+        const shareModal = document.getElementById('share-modal');
+        const closeShare = document.getElementById('close-share');
+        const copyLink = document.getElementById('copy-link');
+        const shareLink = document.getElementById('share-link');
+        const shareSite = document.getElementById('share-site');
+        const shareKnowledge = document.getElementById('share-knowledge');
+        const deleteKnowledge = document.getElementById('delete-knowledge');
+        const themeToggle = document.getElementById('theme-toggle');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // 当前选中的知识ID
+        let currentKnowledgeId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 从本地存储加载数据
+            const savedData = localStorage.getItem('knowledgeData');
+            if (savedData) {
+                knowledgeData = JSON.parse(savedData);
+            }
+            
+            // 渲染知识卡片
+            renderKnowledgeCards();
+            
+            // 初始化主题
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // 检查URL参数是否有分享的知识ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedId = urlParams.get('id');
+            if (sharedId) {
+                const knowledge = knowledgeData.find(k => k.id === parseInt(sharedId));
+                if (knowledge) {
+                    showDetailModal(knowledge);
+                }
+            }
+        });
+
+        // 渲染知识卡片
+        function renderKnowledgeCards(filteredData = knowledgeData) {
+            knowledgeGrid.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            filteredData.forEach(knowledge => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover';
+                card.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                ${getCategoryName(knowledge.category)}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">${knowledge.date}</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 line-clamp-2">${knowledge.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">${knowledge.content}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${knowledge.tags.map(tag => `
+                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                    ${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <button class="view-detail text-primary hover:text-primary/80 font-medium flex items-center" data-id="${knowledge.id}">
+                            查看详情 <i class="fa fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                knowledgeGrid.appendChild(card);
+            });
+            
+            // 添加查看详情事件
+            document.querySelectorAll('.view-detail').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const knowledge = knowledgeData.find(k => k.id === id);
+                    if (knowledge) {
+                        showDetailModal(knowledge);
+                    }
+                });
+            });
+        }
+
+        // 获取分类名称
+        function getCategoryName(category) {
+            const categoryMap = {
+                programming: '编程',
+                math: '数学',
+                ai: '人工智能',
+                tools: '工具技巧',
+                other: '其他'
+            };
+            return categoryMap[category] || '其他';
+        }
+
+        // 搜索功能
+        searchInput.addEventListener('input', () => {
+            filterKnowledge();
+        });
+
+        // 分类筛选
+        categoryFilters.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-btn')) {
+                // 更新活跃状态
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active', 'bg-primary', 'text-white');
+                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                });
+                e.target.classList.add('active', 'bg-primary', 'text-white');
+                e.target.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                
+                filterKnowledge();
+            }
+        });
+
+        // 筛选知识
+        function filterKnowledge() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            
+            const filtered = knowledgeData.filter(knowledge => {
+                const matchesSearch = 
+                    knowledge.title.toLowerCase().includes(searchTerm) || 
+                    knowledge.content.toLowerCase().includes(searchTerm) ||
+                    knowledge.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                
+                const matchesCategory = activeCategory === 'all' || knowledge.category === activeCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderKnowledgeCards(filtered);
+        }
+
+        // 显示添加模态框
+        addBtn.addEventListener('click', () => {
+            addModal.classList.remove('opacity-0', 'pointer-events-none');
+            addModal.querySelector('div').classList.remove('scale-95');
+            addModal.querySelector('div').classList.add('scale-100');
+        });
+
+        // 关闭添加模态框
+        function closeAddModal() {
+            addModal.classList.add('opacity-0', 'pointer-events-none');
+            addModal.querySelector('div').classList.remove('scale-100');
+            addModal.querySelector('div').classList.add('scale-95');
+            knowledgeForm.reset();
+        }
+
+        closeModal.addEventListener('click', closeAddModal);
+        cancelAdd.addEventListener('click', closeAddModal);
+
+        // 提交新知识
+        knowledgeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const content = document.getElementById('content').value;
+            const tagsInput = document.getElementById('tags').value;
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()) : [];
+            
+            const newKnowledge = {
+                id: Date.now(),
+                title,
+                category,
+                content,
+                tags,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            knowledgeData.unshift(newKnowledge);
+            saveData();
+            renderKnowledgeCards();
+            closeAddModal();
+            showToast('知识添加成功！');
+        });
+
+        // 显示详情模态框
+        function showDetailModal(knowledge) {
+            currentKnowledgeId = knowledge.id;
+            
+            document.getElementById('detail-title').textContent = knowledge.title;
+            document.getElementById('detail-category').textContent = getCategoryName(knowledge.category);
+            document.getElementById('detail-date').textContent = `发布于 ${knowledge.date}`;
+            document.getElementById('detail-content').textContent = knowledge.content;
+            
+            const tagsContainer = document.getElementById('detail-tags');
+            tagsContainer.innerHTML = '';
+            knowledge.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+            
+            detailModal.classList.remove('opacity-0', 'pointer-events-none');
+            detailModal.querySelector('div').classList.remove('scale-95');
+            detailModal.querySelector('div').classList.add('scale-100');
+        }
+
+        // 关闭详情模态框
+        function closeDetailModal() {
+            detailModal.classList.add('opacity-0', 'pointer-events-none');
+            detailModal.querySelector('div').classList.remove('scale-100');
+            detailModal.querySelector('div').classList.add('scale-95');
+            currentKnowledgeId = null;
+        }
+
+        closeDetail.addEventListener('click', closeDetailModal);
+
+        // 删除知识
+        deleteKnowledge.addEventListener('click', () => {
+            if (currentKnowledgeId && confirm('确定要删除这条知识吗？')) {
+                knowledgeData = knowledgeData.filter(k => k.id !== currentKnowledgeId);
+                saveData();
+                renderKnowledgeCards();
+                closeDetailModal();
+                showToast('知识已删除');
+            }
+        });
+
+        // 分享网站
+        shareSite.addEventListener('click', () => {
+            const link = window.location.origin + window.location.pathname;
+            shareLink.value = link;
+            showShareModal();
+        });
+
+        // 分享知识
+        shareKnowledge.addEventListener('click', () => {
+            if (currentKnowledgeId) {
+                const link = `${window.location.origin}${window.location.pathname}?id=${currentKnowledgeId}`;
+                shareLink.value = link;
+                showShareModal();
+            }
+        });
+
+        // 显示分享模态框
+        function showShareModal() {
+            shareModal.classList.remove('opacity-0', 'pointer-events-none');
+            shareModal.querySelector('div').classList.remove('scale-95');
+            shareModal.querySelector('div').classList.add('scale-100');
+        }
+
+        // 关闭分享模态框
+        function closeShareModal() {
+            shareModal.classList.add('opacity-0', 'pointer-events-none');
+            shareModal.querySelector('div').classList.remove('scale-100');
+            shareModal.querySelector('div').classList.add('scale-95');
+        }
+
+        closeShare.addEventListener('click', closeShareModal);
+
+        // 复制链接
+        copyLink.addEventListener('click', () => {
+            shareLink.select();
+            document.execCommand('copy');
+            showToast('链接已复制到剪贴板');
+        });
+
+        // 主题切换
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // 显示提示消息
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 保存数据到本地存储
+        function saveData() {
+            localStorage.setItem('knowledgeData', JSON.stringify(knowledgeData));
+        }
+
+        // 点击模态框背景关闭
+        addModal.addEventListener('click', (e) => {
+            if (e.target === addModal) closeAddModal();
+        });
+
+        detailModal.addEventListener('click', (e) => {
+            if (e.target === detailModal) closeDetailModal();
+        });
+
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) closeShareModal();
+        });
+    </script>
+</body>
+</html>
