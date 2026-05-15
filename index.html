@@ -1,184 +1,348 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Knowledge Hub - 云端同步版</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-.card-hover { transition: all 0.3s ease; }
-.card-hover:hover { transform: translateY(-5px); }
-.gradient-bg { background: linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识分享导航站</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        danger: '#ef4444',
+                        success: '#10b981',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all;
+            }
+            .btn-danger {
+                @apply bg-danger text-white px-3 py-1 rounded text-sm hover:bg-danger/90 transition-all;
+            }
+            .input-field {
+                @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-gray-50 min-h-screen">
+    <!-- 头部 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                知识分享导航站
+            </h1>
+            <p class="text-center text-gray-600 mt-2">分享优质学习资源，共同进步成长</p>
+        </div>
+    </header>
 
-<!-- 导航栏 -->
-<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200 dark:border-gray-700">
-  <div class="container mx-auto flex justify-between items-center px-4 py-3">
-    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 flex items-center space-x-2">
-      <i class="fa fa-lightbulb-o"></i>
-      <span>Knowledge Hub</span>
-    </span>
-    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-      <i class="fa fa-moon-o dark:hidden"></i>
-      <i class="fa fa-sun-o hidden dark:inline"></i>
-    </button>
-  </div>
-</nav>
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 添加链接表单 -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fa fa-plus-circle text-primary mr-2"></i> 添加新的学习资源
+            </h2>
+            <form id="addForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 mb-1">网站名称</label>
+                        <input type="text" id="siteName" class="input-field" placeholder="例如：MDN Web 文档" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">网站链接</label>
+                        <input type="url" id="siteUrl" class="input-field" placeholder="https://developer.mozilla.org" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">分类</label>
+                    <select id="siteCategory" class="input-field">
+                        <option value="编程开发">编程开发</option>
+                        <option value="数学学习">数学学习</option>
+                        <option value="人工智能">人工智能</option>
+                        <option value="工具软件">工具软件</option>
+                        <option value="其他资源">其他资源</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">简介（可选）</label>
+                    <textarea id="siteDesc" class="input-field" rows="2" placeholder="简单介绍一下这个网站的用途..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary w-full md:w-auto">
+                    <i class="fa fa-plus mr-1"></i> 添加资源
+                </button>
+            </form>
+        </div>
 
-<main class="container mx-auto px-4 pt-24 pb-16">
-  <header class="text-center mb-12">
-    <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-4">我的知识分享</h1>
-    <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">云端同步，可添加图片和超链接，删除仅限 owner</p>
-  </header>
+        <!-- 分类筛选 -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="category-btn active px-4 py-2 rounded-full bg-primary text-white" data-category="all">全部</button>
+            <button class="category-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-all" data-category="编程开发">编程开发</button>
+            <button class="category-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-all" data-category="数学学习">数学学习</button>
+            <button class="category-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-all" data-category="人工智能">人工智能</button>
+            <button class="category-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-all" data-category="工具软件">工具软件</button>
+            <button class="category-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-all" data-category="其他资源">其他资源</button>
+        </div>
 
-  <!-- 搜索和分类 -->
-  <div class="max-w-3xl mx-auto mb-10">
-    <input id="search-input" type="text" placeholder="搜索知识..." class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none mb-4">
-    <div id="category-filters" class="flex flex-wrap gap-2 justify-center">
-      <button class="category-btn active px-4 py-2 rounded-full bg-blue-500 text-white" data-category="all">全部</button>
-      <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700" data-category="编程">编程</button>
-      <button class="category-btn px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700" data-category="学习资源">学习资源</button>
+        <!-- 资源列表 -->
+        <div id="resourcesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 资源卡片会在这里动态生成 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="text-center py-16 hidden">
+            <i class="fa fa-folder-open-o text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg">还没有添加任何资源，快来添加第一个吧！</p>
+        </div>
+    </main>
+
+    <!-- 密码验证弹窗 -->
+    <div id="passwordModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-semibold mb-4">验证管理员密码</h3>
+            <p class="text-gray-600 mb-4">只有输入正确的密码才能删除此资源</p>
+            <input type="password" id="passwordInput" class="input-field mb-4" placeholder="请输入管理员密码">
+            <p id="passwordError" class="text-danger text-sm mb-4 hidden">密码错误，请重试</p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelDelete" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-all">取消</button>
+                <button id="confirmDelete" class="btn-danger">确认删除</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div id="knowledge-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  <div id="empty-state" class="hidden text-center py-16">
-    <i class="fa fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-    <h3 class="text-xl font-medium mb-2">没有找到相关知识</h3>
-  </div>
-</main>
+    <!-- 页脚 -->
+    <footer class="bg-white border-t mt-16 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-500">
+            <p>知识分享导航站 © 2026 | 分享知识，传递价值</p>
+        </div>
+    </footer>
 
-<!-- 添加知识模态 -->
-<div id="add-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all">
-  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl p-6 transform scale-95 transition-all">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">添加新知识</h2>
-      <button id="close-modal" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fa fa-times"></i></button>
-    </div>
-    <form id="knowledge-form" class="space-y-4">
-      <input type="text" id="title" placeholder="标题" required class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-      <select id="category" required class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-        <option value="编程">编程</option>
-        <option value="学习资源">学习资源</option>
-      </select>
-      <textarea id="content" placeholder="正文内容" rows="4" required class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700"></textarea>
-      <input type="text" id="image" placeholder="图片链接 (可选)" class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-      <input type="text" id="link" placeholder="超链接 (可选)" class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-      <input type="text" id="tags" placeholder="标签，用逗号分隔" class="w-full px-4 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-      <div class="flex justify-end gap-3">
-        <button type="button" id="cancel-add" class="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">取消</button>
-        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">保存</button>
-      </div>
-    </form>
-  </div>
-</div>
+    <script>
+        // 管理员密码
+        const ADMIN_PASSWORD = '1234';
+        
+        // 存储资源的数组
+        let resources = [];
+        let currentCategory = 'all';
+        let deleteIndex = -1;
 
-<button id="add-btn" class="fixed bottom-8 right-8 w-14 h-14 rounded-full gradient-bg text-white flex items-center justify-center hover:scale-110 z-40">
-  <i class="fa fa-plus"></i>
-</button>
+        // DOM 元素
+        const addForm = document.getElementById('addForm');
+        const resourcesList = document.getElementById('resourcesList');
+        const emptyState = document.getElementById('emptyState');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
 
-<div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-800 text-white rounded-lg opacity-0 transition-all z-50"></div>
+        // 初始化
+        function init() {
+            // 从本地存储加载资源
+            loadResources();
+            // 渲染资源列表
+            renderResources();
+            // 绑定事件
+            bindEvents();
+        }
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+        // 从本地存储加载资源
+        function loadResources() {
+            const savedResources = localStorage.getItem('knowledgeResources');
+            if (savedResources) {
+                resources = JSON.parse(savedResources);
+            } else {
+                // 添加一些示例资源
+                resources = [
+                    {
+                        name: 'MDN Web 文档',
+                        url: 'https://developer.mozilla.org',
+                        category: '编程开发',
+                        desc: '最权威的Web开发技术文档，涵盖HTML、CSS、JavaScript等',
+                        date: new Date().toLocaleDateString()
+                    },
+                    {
+                        name: 'GitHub',
+                        url: 'https://github.com',
+                        category: '编程开发',
+                        desc: '全球最大的代码托管平台，开源项目聚集地',
+                        date: new Date().toLocaleDateString()
+                    },
+                    {
+                        name: '3Blue1Brown',
+                        url: 'https://www.youtube.com/@3blue1brown',
+                        category: '数学学习',
+                        desc: '用动画直观讲解数学知识，让数学变得有趣',
+                        date: new Date().toLocaleDateString()
+                    }
+                ];
+                saveResources();
+            }
+        }
 
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
-};
+        // 保存资源到本地存储
+        function saveResources() {
+            localStorage.setItem('knowledgeResources', JSON.stringify(resources));
+        }
 
-const OWNER_EMAIL = "你的邮箱"; // 用于删除权限
+        // 渲染资源列表
+        function renderResources() {
+            resourcesList.innerHTML = '';
+            
+            // 根据分类筛选
+            const filteredResources = currentCategory === 'all' 
+                ? resources 
+                : resources.filter(r => r.category === currentCategory);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const knowledgeCol = collection(db,"knowledge");
+            if (filteredResources.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
 
-const knowledgeGrid = document.getElementById('knowledge-grid');
-const addBtn = document.getElementById('add-btn');
-const addModal = document.getElementById('add-modal');
-const closeModal = document.getElementById('close-modal');
-const cancelAdd = document.getElementById('cancel-add');
-const knowledgeForm = document.getElementById('knowledge-form');
-const toast = document.getElementById('toast');
+            filteredResources.forEach((resource, index) => {
+                const actualIndex = resources.indexOf(resource);
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md overflow-hidden card-hover';
+                card.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full">${resource.category}</span>
+                            <button class="delete-btn text-gray-400 hover:text-danger transition-all" data-index="${actualIndex}">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">
+                            <a href="${resource.url}" target="_blank" class="hover:text-primary transition-colors">
+                                ${resource.name}
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">${resource.desc || '暂无简介'}</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                            <span><i class="fa fa-calendar-o mr-1"></i> ${resource.date}</span>
+                            <a href="${resource.url}" target="_blank" class="text-primary hover:underline">
+                                访问网站 <i class="fa fa-external-link ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                resourcesList.appendChild(card);
+            });
 
-let currentUserEmail = OWNER_EMAIL; // 直接使用 email 判断删除权限
+            // 绑定删除按钮事件
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    deleteIndex = parseInt(e.currentTarget.dataset.index);
+                    showPasswordModal();
+                });
+            });
+        }
 
-function showToast(msg){ toast.textContent=msg; toast.classList.remove('opacity-0'); setTimeout(()=>toast.classList.add('opacity-0'),3000); }
+        // 显示密码验证弹窗
+        function showPasswordModal() {
+            passwordModal.classList.remove('hidden');
+            passwordInput.value = '';
+            passwordError.classList.add('hidden');
+            passwordInput.focus();
+        }
 
-function renderCards(data){
-  knowledgeGrid.innerHTML='';
-  data.forEach(docSnap=>{
-    const item = docSnap.data();
-    const card = document.createElement('div');
-    card.className='bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover p-4';
-    card.innerHTML=`
-      <h3 class="font-bold mb-2">${item.title}</h3>
-      <p class="mb-2">${item.content}</p>
-      ${item.image?`<img src="${item.image}" class="mb-2 max-h-40 w-full object-cover rounded"/>`:''}
-      ${item.link?`<a href="${item.link}" target="_blank" class="text-blue-500 hover:underline">${item.link}</a>`:''}
-      <div class="flex gap-2 mt-2">${item.tags?.map(tag=>`<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">${tag}</span>`).join('')}</div>
-      ${(currentUserEmail===OWNER_EMAIL)?`<button data-id="${docSnap.id}" class="delete-btn mt-2 px-3 py-1 text-red-500 rounded border border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">删除</button>`:''}
-    `;
-    knowledgeGrid.appendChild(card);
+        // 隐藏密码验证弹窗
+        function hidePasswordModal() {
+            passwordModal.classList.add('hidden');
+        }
 
-    if(currentUserEmail===OWNER_EMAIL){
-      card.querySelector('.delete-btn')?.addEventListener('click',async ()=>{
-        const pwd = prompt("请输入删除密码");
-        if(pwd !== "1234"){ showToast("密码错误"); return; }
-        await deleteDoc(doc(db,"knowledge",docSnap.id));
-        showToast("已删除");
-      });
-    }
-  });
-}
+        // 验证密码并删除
+        function verifyAndDelete() {
+            if (passwordInput.value === ADMIN_PASSWORD) {
+                // 密码正确，删除资源
+                resources.splice(deleteIndex, 1);
+                saveResources();
+                renderResources();
+                hidePasswordModal();
+            } else {
+                // 密码错误
+                passwordError.classList.remove('hidden');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
 
-onSnapshot(knowledgeCol, snapshot=>renderCards(snapshot.docs));
+        // 绑定所有事件
+        function bindEvents() {
+            // 添加资源表单提交
+            addForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const newResource = {
+                    name: document.getElementById('siteName').value.trim(),
+                    url: document.getElementById('siteUrl').value.trim(),
+                    category: document.getElementById('siteCategory').value,
+                    desc: document.getElementById('siteDesc').value.trim(),
+                    date: new Date().toLocaleDateString()
+                };
 
-// 打开/关闭模态框
-addBtn.addEventListener('click',()=>{
-  addModal.classList.remove('opacity-0','pointer-events-none');
-  addModal.querySelector('div').classList.remove('scale-95');
-  addModal.querySelector('div').classList.add('scale-100');
-});
-closeModal.addEventListener('click',()=>{
-  addModal.classList.add('opacity-0','pointer-events-none');
-  addModal.querySelector('div').classList.remove('scale-100');
-  addModal.querySelector('div').classList.add('scale-95');
-  knowledgeForm.reset();
-});
-cancelAdd.addEventListener('click',()=>{
-  addModal.classList.add('opacity-0','pointer-events-none');
-  addModal.querySelector('div').classList.remove('scale-100');
-  addModal.querySelector('div').classList.add('scale-95');
-  knowledgeForm.reset();
-});
+                resources.unshift(newResource);
+                saveResources();
+                renderResources();
+                addForm.reset();
 
-knowledgeForm.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const newItem={
-    title: document.getElementById('title').value,
-    category: document.getElementById('category').value,
-    content: document.getElementById('content').value,
-    image: document.getElementById('image').value,
-    link: document.getElementById('link').value,
-    tags: document.getElementById('tags').value.split(',').map(t=>t.trim()),
-    date: new Date().toISOString().split('T')[0]
-  };
-  await addDoc(knowledgeCol,newItem);
-  addModal.classList.add('opacity-0','pointer-events-none');
-  addModal.querySelector('div').classList.remove('scale-100'); addModal.querySelector('div').classList.add('scale-95');
-  knowledgeForm.reset();
-  showToast("添加成功");
-});
-</script>
+                // 显示成功提示
+                alert('资源添加成功！');
+            });
+
+            // 分类筛选按钮
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-primary', 'text-white');
+                        b.classList.add('bg-gray-200');
+                    });
+                    btn.classList.add('active', 'bg-primary', 'text-white');
+                    btn.classList.remove('bg-gray-200');
+                    
+                    currentCategory = btn.dataset.category;
+                    renderResources();
+                });
+            });
+
+            // 密码弹窗事件
+            cancelDelete.addEventListener('click', hidePasswordModal);
+            confirmDelete.addEventListener('click', verifyAndDelete);
+            
+            // 按回车键确认密码
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verifyAndDelete();
+                }
+            });
+
+            // 点击弹窗外部关闭
+            passwordModal.addEventListener('click', (e) => {
+                if (e.target === passwordModal) {
+                    hidePasswordModal();
+                }
+            });
+        }
+
+        // 启动应用
+        init();
+    </script>
 </body>
 </html>
