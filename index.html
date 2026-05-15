@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Knowledge Hub - 云端版</title>
+<title>Knowledge Hub - 云端同步版</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-  .card-hover { transition: all 0.3s ease; }
-  .card-hover:hover { transform: translateY(-5px); }
-  .gradient-bg { background: linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%); }
+.card-hover { transition: all 0.3s ease; }
+.card-hover:hover { transform: translateY(-5px); }
+.gradient-bg { background: linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%); }
 </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
+<!-- 导航栏 -->
 <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200 dark:border-gray-700">
   <div class="container mx-auto flex justify-between items-center px-4 py-3">
     <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 flex items-center space-x-2">
@@ -33,6 +34,7 @@
     <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">云端同步，可添加图片和超链接，删除仅限 owner</p>
   </header>
 
+  <!-- 搜索和分类 -->
   <div class="max-w-3xl mx-auto mb-10">
     <input id="search-input" type="text" placeholder="搜索知识..." class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none mb-4">
     <div id="category-filters" class="flex flex-wrap gap-2 justify-center">
@@ -50,8 +52,8 @@
 </main>
 
 <!-- 添加知识模态 -->
-<div id="add-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none">
-  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl p-6">
+<div id="add-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl p-6 transform scale-95 transition-all">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">添加新知识</h2>
       <button id="close-modal" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fa fa-times"></i></button>
@@ -94,11 +96,10 @@ const firebaseConfig = {
   appId: "APP_ID"
 };
 
-const OWNER_EMAIL = "你的邮箱"; // 用于删除权限
+const OWNER_EMAIL = "你的邮箱"; // 删除权限判断
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 const knowledgeCol = collection(db,"knowledge");
 
 const knowledgeGrid = document.getElementById('knowledge-grid');
@@ -109,7 +110,7 @@ const cancelAdd = document.getElementById('cancel-add');
 const knowledgeForm = document.getElementById('knowledge-form');
 const toast = document.getElementById('toast');
 
-let currentUserEmail = OWNER_EMAIL; // 可以改成 Firebase Auth 验证
+let currentUserEmail = OWNER_EMAIL; // 可改成 Firebase Auth 验证 owner
 
 function showToast(msg){ toast.textContent=msg; toast.classList.remove('opacity-0'); setTimeout(()=>toast.classList.add('opacity-0'),3000); }
 
@@ -142,9 +143,23 @@ function renderCards(data){
 
 onSnapshot(knowledgeCol, snapshot=>renderCards(snapshot.docs));
 
-addBtn.addEventListener('click',()=>{ addModal.classList.remove('opacity-0','pointer-events-none'); addModal.querySelector('div').classList.remove('scale-95'); addModal.querySelector('div').classList.add('scale-100'); });
-closeModal.addEventListener('click',()=>{ addModal.classList.add('opacity-0','pointer-events-none'); addModal.querySelector('div').classList.remove('scale-100'); addModal.querySelector('div').classList.add('scale-95'); knowledgeForm.reset(); });
-cancelAdd.addEventListener('click',()=>{ addModal.classList.add('opacity-0','pointer-events-none'); addModal.querySelector('div').classList.remove('scale-100'); addModal.querySelector('div').classList.add('scale-95'); knowledgeForm.reset(); });
+addBtn.addEventListener('click',()=>{
+  addModal.classList.remove('opacity-0','pointer-events-none');
+  addModal.querySelector('div').classList.remove('scale-95');
+  addModal.querySelector('div').classList.add('scale-100');
+});
+closeModal.addEventListener('click',()=>{
+  addModal.classList.add('opacity-0','pointer-events-none');
+  addModal.querySelector('div').classList.remove('scale-100');
+  addModal.querySelector('div').classList.add('scale-95');
+  knowledgeForm.reset();
+});
+cancelAdd.addEventListener('click',()=>{
+  addModal.classList.add('opacity-0','pointer-events-none');
+  addModal.querySelector('div').classList.remove('scale-100');
+  addModal.querySelector('div').classList.add('scale-95');
+  knowledgeForm.reset();
+});
 
 knowledgeForm.addEventListener('submit',async e=>{
   e.preventDefault();
@@ -159,11 +174,12 @@ knowledgeForm.addEventListener('submit',async e=>{
   };
   await addDoc(knowledgeCol,newItem);
   addModal.classList.add('opacity-0','pointer-events-none');
-  addModal.querySelector('div').classList.remove('scale-100'); addModal.querySelector('div').classList.add('scale-95'); knowledgeForm.reset();
+  addModal.querySelector('div').classList.remove('scale-100'); addModal.querySelector('div').classList.add('scale-95');
+  knowledgeForm.reset();
   showToast("添加成功");
 });
 
-// 搜索和分类功能可以沿用之前 localStorage 版本的逻辑
+// 搜索与分类功能可沿用之前逻辑
 </script>
 </body>
 </html>
